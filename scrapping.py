@@ -21,7 +21,7 @@ if response.status_code == 200:
         print("The dropdown menu was not found in the page structure.")
         exit()
     links_containers = dropdown_menu.find_all('div', class_='nav-main__lvl-3__container')
-    for container in links_containers[0:3]:
+    for container in links_containers[0:1]:
         links = container.find_all('a')
         for link in links:
             full_url = urljoin(base_url, link.get('href', ''))
@@ -29,10 +29,12 @@ if response.status_code == 200:
             if 'freiraum-galabau' in link.get('href', ''):
                 specific_links.append(full_url)
 
+for full_url in full_urls:
+    print(full_url)
 
 
 
-def get_all_links_from_page(url, full_urls, specific_links, include_substring='infrastruktur-tiefbau', exclude_substring='planungsinformationen'):
+def get_all_links_from_page(url, full_urls, specific_links, include_substring='freiraum-galabau', exclude_substring='planungsinformationen'):
     all_links = []
     try:
         response = requests.get(url)
@@ -52,7 +54,7 @@ def get_all_links_from_page(url, full_urls, specific_links, include_substring='i
 
 def find_specific_links(full_urls, keyword, exclude_keyword):
     found_links = []  
-    for page_url in full_urls[:]:
+    for page_url in full_urls[:1]:
         try:
             response = requests.get(page_url)
             if response.status_code == 200:
@@ -63,26 +65,29 @@ def find_specific_links(full_urls, keyword, exclude_keyword):
                     if keyword in href in href and exclude_keyword not in href and full_link not in full_urls:
                         if full_link not in found_links:
                             found_links.append(full_link)
+
+                            
         except Exception as e:
             print(f"Error fetching or parsing {page_url}: {e}")
 
     print(f"Number of links found: {len(found_links)}")
     return found_links
 
-keyword = 'infrastruktur-tiefbau'
+keyword = 'freiraum-galabau'
 exclude_keyword = 'planungsinformationen'
 specific_links = find_specific_links(full_urls, keyword, exclude_keyword)
 
 
 for link in specific_links:
-    print(f"Fetching links from {link}:")
+    #print(f"Fetching links from {link}:")
     all_links = get_all_links_from_page(link, full_urls, specific_links)
     for l in all_links:
-        print(l)
+        #print(l)
         market_segment = l.split("/produkte/")[1].split("/")[0]
         product= l.split("/produkte/")[1].split("/")[1]
         page_data = {'page_url': l, 'absolute_link': link, 'market_segment': market_segment, 'product':product }
         meta_data_list.append(page_data)
         
-print(meta_data_list)
+#print(meta_data_list)
+
 
