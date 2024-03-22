@@ -21,17 +21,13 @@ if response.status_code == 200:
         print("The dropdown menu was not found in the page structure.")
         exit()
     links_containers = dropdown_menu.find_all('div', class_='nav-main__lvl-3__container')
-    for container in links_containers[0:1]:
+    for container in links_containers[2:3]:
         links = container.find_all('a')
         for link in links:
             full_url = urljoin(base_url, link.get('href', ''))
             full_urls.append(full_url)
             if 'freiraum-galabau' in link.get('href', ''):
                 specific_links.append(full_url)
-
-for full_url in full_urls:
-    print(full_url)
-
 
 
 def get_all_links_from_page(url, full_urls, specific_links, include_substring='freiraum-galabau', exclude_substring='planungsinformationen'):
@@ -54,7 +50,7 @@ def get_all_links_from_page(url, full_urls, specific_links, include_substring='f
 
 def find_specific_links(full_urls, keyword, exclude_keyword):
     found_links = []  
-    for page_url in full_urls[:1]:
+    for page_url in full_urls[1:2]:
         try:
             response = requests.get(page_url)
             if response.status_code == 200:
@@ -79,10 +75,10 @@ specific_links = find_specific_links(full_urls, keyword, exclude_keyword)
 
 
 for link in specific_links:
-    #print(f"Fetching links from {link}:")
+    print(f"Fetching links from {link}:")
     all_links = get_all_links_from_page(link, full_urls, specific_links)
     for l in all_links:
-        #print(l)
+        print(l)
         market_segment = l.split("/produkte/")[1].split("/")[0]
         product= l.split("/produkte/")[1].split("/")[1]
         page_data = {'page_url': l, 'absolute_link': link, 'market_segment': market_segment, 'product':product }
