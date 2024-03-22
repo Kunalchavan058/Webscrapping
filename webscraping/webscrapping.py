@@ -34,7 +34,7 @@ if response.status_code == 200:
                         market_segment_dict[segment_key] = {}
                 
                     if url not in market_segment_dict[segment_key]:
-                        market_segment_dict[segment_key][url] = []
+                        market_segment_dict[segment_key][url] = {}
     
                       
 #####################################################################################################
@@ -63,7 +63,7 @@ for segment_key, urls_dict in market_segment_dict.items():
                             if not any(keyword in derived_url for keyword in filter_keywords):
                                 if derived_url not in market_segment_dict[segment_key][original_url]:
                                     #print(derived_url)
-                                    market_segment_dict[segment_key][original_url].append(derived_url)
+                                    market_segment_dict[segment_key][original_url][derived_url] = []
                 else:
                     print(f"No 'content-main' class found in {original_url}")
             else:
@@ -72,13 +72,13 @@ for segment_key, urls_dict in market_segment_dict.items():
             print(f"Error fetching {original_url}: {e}")
 
 # Example output structure
-print("Market Segment Dictionary with Derived URLs:")
-for key, urls_dict in market_segment_dict.items():
-    print(f"{key}:")
-    for original_url, derived_urls in urls_dict.items():
-        print(f"  Original URL: {original_url}")
-        for url in derived_urls:
-            print(f"    - Derived URL: {url}")
+# print("Market Segment Dictionary with Derived URLs:")
+# for key, urls_dict in market_segment_dict.items():
+#     print(f"{key}:")
+#     for original_url, derived_urls in urls_dict.items():
+#         print(f"  Original URL: {original_url}")
+#         for url in derived_urls:
+#             print(f"    - Derived URL: {url}")
 
  
 #####################################################################################################
@@ -87,39 +87,39 @@ for key, urls_dict in market_segment_dict.items():
 '''
 #######################################################################################################   
 
-processed_urls = set()
-
 for segment, urls_dict in market_segment_dict.items():
-    for original_url, derived_urls_list in urls_dict.items():
-        for derived_url_value in derived_urls_list:
+    for original_url, derived_urls_dict in urls_dict.items():
+         for derived_url, derived_url_list in derived_urls_dict.items():
             try:
-                # Skip URLs that have been processed or contain 'shop'
-                if derived_url_value not in processed_urls and 'shop' not in derived_url_value:
-                    response = requests.get(derived_url_value)
-                    if response.status_code == 200:
-                        soup = BeautifulSoup(response.content, 'html.parser')
-                        content_main = soup.find(class_='tx-dkdcatalog')
-                        if content_main:
-                            links = content_main.find_all('a', href=True)
-                            for link in links:
-                                product_url = link['href']
-                                # Skip undesired URLs before any processing
-                                if 'javascript:void(0)' in product_url or product_url.endswith('.png') or 'shop' in product_url:
-                                    continue
+                response = requests.get(derived_url)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    content_main = soup.find(class_='tx-dkdcatalog')
+                    if content_main:
+                        links = content_main.find_all('a', href=True)
+                        for link in links:
+                            product_url = link['href']
+                            # Skip undesired URLs before any processing
+                            if 'javascript:void(0)' in product_url or product_url.endswith('.png') or 'shop' in product_url:
+                                continue
 
-                                if not product_url.startswith('http'):
-                                    product_url = base_url + product_url
+                            if not product_url.startswith('http'):
+                                product_url = base_url + product_url
 
-                                # Check if the product URL is already processed or contains 'shop'
-                                if product_url not in processed_urls and 'shop' not in product_url:
-                                    print(product_url)
-                                    
-
-                # Mark the derived URL as processed to avoid re-fetching
-                processed_urls.add(derived_url_value)
+                            # Check if the product URL is already processed or contains 'shop'
+                            if product_url not in market_segment_dict[segment_key][original_url][derived_url] and 'shop' not in product_url:
+                                print(product_url)
+                                market_segment_dict[segment_key][original_url][derived_url].append(product_url)
+                                print(f"derived_url: {derived_url} and derived_url_list: {derived_url_list}" )
+                            
+                            else:
+                                print(f"Failed to fetch {derived_url}")
 
             except Exception as e:
-                print(f"Error fetching {derived_url_value}: {e}")
+              print(f"Error fetching {derived_url}: {e}")
+            
+                                    
+            
                             
 
 
