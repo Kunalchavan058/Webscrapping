@@ -10,11 +10,10 @@ response = requests.get(base_url)
                         
 '''  Links from the market segment are defined as original_url
      Market segment consist of three parts 
-     Freiraum /GalBau, Infrastruktur / Tiefbau and Gebäude
+     Freiraum /GalaBau, Infrastruktur / Tiefbau and Gebäude
 '''
 ####################################################################################################### 
 
-# Assuming 'response' is your HTTP response object and it has a status code of 200
 if response.status_code == 200:
     soup = BeautifulSoup(response.content, 'html.parser')
     dropdown_menus = soup.select('.nav-main__lvl-3__container')
